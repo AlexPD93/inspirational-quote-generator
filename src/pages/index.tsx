@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 
 import styles from "@/styles/Home.module.css";
@@ -21,9 +21,66 @@ import {
 // Assets
 import Cloud1 from "../../assets/cloud-and-thunder.png";
 import Cloud2 from "../../assets/cloudy-weather.png";
+import { API } from "aws-amplify";
+import { quotesQueryName } from "@/graphql/queries";
+import { GraphQLResult } from "@aws-amplify/api-graphql";
 
+// interface for our DynamoDB object
+interface UpdateQuoteInfoData {
+  id: string;
+  queryName: string;
+  quotesGenerated: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// type guard for our fetch function. checks types and gives expected value
+function isGraphQlResultForquotesQueryName(
+  response: any
+): response is GraphQLResult<{
+  quotesQueryName: {
+    items: [UpdateQuoteInfoData];
+  };
+}> {
+  return (
+    response.data &&
+    response.data.quotesQueryName &&
+    response.data.quotesQueryName.items
+  );
+}
 export default function Home() {
   const [numberOfQuotes, setNumberOfQuotes] = useState<Number | null>(0);
+
+  // Function to fetch our DynamoDB object (quotes generated)
+  const updateQuoteInfo = async () => {
+    try {
+      const response = await API.graphql<UpdateQuoteInfoData>({
+        query: quotesQueryName,
+        authMode: "AWS_IAM",
+        variables: {
+          queryName: "LIVE",
+        },
+      });
+      // Create type guards
+      if (!isGraphQlResultForquotesQueryName(response)) {
+        throw new Error("Unexpected response from API.graphql");
+      }
+
+      if (!response.data) {
+        throw new Error("Response data is undefined");
+      }
+
+      const receivedNumberOfQuotes =
+        response.data.quotesQueryName.items[0].quotesGenerated;
+      setNumberOfQuotes(receivedNumberOfQuotes);
+    } catch (error) {
+      console.log("error getting quote data", error);
+    }
+  };
+
+  useEffect(() => {
+    updateQuoteInfo();
+  }, []);
   return (
     <>
       <Head>
