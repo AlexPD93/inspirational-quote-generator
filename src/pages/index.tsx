@@ -17,7 +17,7 @@ import {
   GenerateQuoteButton,
   GenerateQuoteButtonText,
 } from "../../components/QuoteGenerator/QuoteGeneratorElements";
-
+import QuoteGeneratorModal from "../../components/QuoteGenerator/index";
 // Assets
 import Cloud1 from "../../assets/cloud-and-thunder.png";
 import Cloud2 from "../../assets/cloudy-weather.png";
@@ -48,8 +48,12 @@ function isGraphQlResultForquotesQueryName(
     response.data.quotesQueryName.items
   );
 }
+
 export default function Home() {
   const [numberOfQuotes, setNumberOfQuotes] = useState<Number | null>(0);
+  const [openGenerator, setOpenGenerator] = useState<boolean>(false);
+  const [processingQuote, setProcessingQuote] = useState<boolean>(false);
+  const [quoteReceived, setQuoteReceived] = useState<String | null>(null);
 
   // Function to fetch our DynamoDB object (quotes generated)
   const updateQuoteInfo = async () => {
@@ -81,6 +85,16 @@ export default function Home() {
   useEffect(() => {
     updateQuoteInfo();
   }, []);
+
+  // Functions for quote generator modal
+  const handleCloseGenerator = () => {
+    setOpenGenerator(false);
+  };
+
+  const handleOpenGenerator = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    setOpenGenerator(true);
+  };
   return (
     <>
       <Head>
@@ -93,7 +107,14 @@ export default function Home() {
       <GradientBackgroundCon>
         {/* Quote generator modal pop-up */}
 
-        {/* <QuoteGeneratorModal /> */}
+        <QuoteGeneratorModal
+          open={openGenerator}
+          close={handleCloseGenerator}
+          processingQuote={processingQuote}
+          setProcessingQuote={setProcessingQuote}
+          quoteReceived={quoteReceived}
+          setQuoteReceived={setQuoteReceived}
+        />
 
         {/* Quote Generator */}
 
@@ -117,7 +138,9 @@ export default function Home() {
             </QuoteGeneratorSubTitle>
 
             <GenerateQuoteButton>
-              <GenerateQuoteButtonText>Make a Quote</GenerateQuoteButtonText>
+              <GenerateQuoteButtonText onClick={handleOpenGenerator}>
+                Make a Quote
+              </GenerateQuoteButtonText>
             </GenerateQuoteButton>
           </QuoteGeneratorInnerCon>
         </QuoteGeneratorCon>
