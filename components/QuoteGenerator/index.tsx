@@ -93,7 +93,7 @@ const QuoteGeneratorModal = ({
               </>
             )}
 
-            {quoteReceived === null && (
+            {quoteReceived !== null && (
               <>
                 <QuoteGeneratorTitle>Download your quote!</QuoteGeneratorTitle>
                 <QuoteGeneratorSubTitle style={{ marginTop: "20px" }}>

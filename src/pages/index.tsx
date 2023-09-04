@@ -22,8 +22,17 @@ import QuoteGeneratorModal from "../../components/QuoteGenerator/index";
 import Cloud1 from "../../assets/cloud-and-thunder.png";
 import Cloud2 from "../../assets/cloudy-weather.png";
 import { API } from "aws-amplify";
-import { quotesQueryName } from "@/graphql/queries";
+import { generateAQuote, quotesQueryName } from "@/graphql/queries";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
+
+// interface for our appsync <> lambda JSON response
+interface GenerateAQuoteData {
+  generateAQuote: {
+    statusCode: number;
+    headers: { [key: string]: string };
+    body: string;
+  };
+}
 
 // interface for our DynamoDB object
 interface UpdateQuoteInfoData {
@@ -89,6 +98,8 @@ export default function Home() {
   // Functions for quote generator modal
   const handleCloseGenerator = () => {
     setOpenGenerator(false);
+    setProcessingQuote(false);
+    setQuoteReceived(null);
   };
 
   const handleOpenGenerator = async (e: React.SyntheticEvent) => {
@@ -97,10 +108,27 @@ export default function Home() {
     setProcessingQuote(true);
     try {
       // Run Lambda Function
-      setTimeout(() => {
-        // Give 3 seconds of displaying getting quote. Then display the quote from the lambda function
-        setProcessingQuote(false);
-      }, 3000);
+      const runFunction = "runFunction";
+      const runFunctionStringified = JSON.stringify(runFunction);
+      const response = await API.graphql<GenerateAQuoteData>({
+        query: generateAQuote,
+        authMode: "AWS_IAM",
+        variables: {
+          input: runFunctionStringified,
+        },
+      });
+      const responseStringified = JSON.stringify(response);
+      const responseReStringified = JSON.stringify(responseStringified);
+      const bodyIndex = responseReStringified.indexOf("body=") + 5;
+      const bodyAndBase64 = responseReStringified.substring(bodyIndex);
+      const bodyArray = bodyAndBase64.split(",");
+      const body = bodyArray[0];
+      setQuoteReceived(body);
+      // End state:
+      setProcessingQuote(false);
+
+      //Fetch if any new quotes were generated from center
+      updateQuoteInfo();
     } catch (error) {
       console.log("error generating quote:", error);
       setProcessingQuote(false);
