@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 // Components
 import {
   QuoteGeneratorModalContainer,
   QuoteGeneratorModalInnerContainer,
+  QuoteGeneratorTitle,
+  QuoteGeneratorSubTitle,
+  ModalCircularProgress,
 } from "./QuoteGeneratorElements";
+import ImageBlob from "../Animation/ImageBlob";
+import { ImageBlobCon } from "../Animation/AnimationElements";
+import AnimatedDownloadButton from "../Animation/AnimatedDownloadButton";
 
 // Material UI Imports
 import { Modal, Backdrop, Fade } from "@mui/material";
@@ -28,6 +34,35 @@ const QuoteGeneratorModal = ({
   quoteReceived,
   setQuoteReceived,
 }: QuoteGeneratorModalProps) => {
+  const wiseDevQuote = "If you can center a div, anything is possible.";
+  const wiseDevQuoteAuthor = "- a wise senior software engineer.";
+
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  // Function: Handling download of quote card
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    if (typeof blobUrl === "string") {
+      link.href = blobUrl;
+      link.download = "quote.png";
+      link.click();
+    }
+  };
+
+  // Function to handle the receiving of quote card
+  useEffect(() => {
+    if (quoteReceived) {
+      const binaryData = Buffer.from(quoteReceived, "base64");
+      const blob = new Blob([binaryData], { type: "image/png" });
+      const blobUrlGenerated = URL.createObjectURL(blob);
+      console.log(blobUrlGenerated);
+      setBlobUrl(blobUrlGenerated);
+
+      return () => {
+        URL.revokeObjectURL(blobUrlGenerated);
+      };
+    }
+  }, [quoteReceived]);
   return (
     <Modal
       id="QuoteGeneratorModal"
@@ -43,7 +78,36 @@ const QuoteGeneratorModal = ({
     >
       <Fade in={open}>
         <QuoteGeneratorModalContainer sx={style}>
-          <QuoteGeneratorModalInnerContainer></QuoteGeneratorModalInnerContainer>
+          <QuoteGeneratorModalInnerContainer>
+            {processingQuote === true && quoteReceived === null && (
+              <>
+                <ModalCircularProgress size={"8rem"} thickness={2.5} />
+                <QuoteGeneratorTitle>
+                  Creating your quote...
+                </QuoteGeneratorTitle>
+                <QuoteGeneratorSubTitle style={{ marginTop: "20px" }}>
+                  {wiseDevQuote}
+                  <br></br>
+                  <span style={{ fontSize: 26 }}>{wiseDevQuoteAuthor}</span>
+                </QuoteGeneratorSubTitle>
+              </>
+            )}
+
+            {quoteReceived === null && (
+              <>
+                <QuoteGeneratorTitle>Download your quote!</QuoteGeneratorTitle>
+                <QuoteGeneratorSubTitle style={{ marginTop: "20px" }}>
+                  See a preview:
+                </QuoteGeneratorSubTitle>
+                <ImageBlobCon>
+                  <ImageBlob quoteReceived={quoteReceived} blobUrl={blobUrl} />
+                </ImageBlobCon>
+                <AnimatedDownloadButton
+                  handleDownload={handleDownload}
+                ></AnimatedDownloadButton>
+              </>
+            )}
+          </QuoteGeneratorModalInnerContainer>
         </QuoteGeneratorModalContainer>
       </Fade>
     </Modal>
