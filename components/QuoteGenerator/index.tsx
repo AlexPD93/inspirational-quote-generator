@@ -82,9 +82,7 @@ const QuoteGeneratorModal = ({
             {processingQuote === true && quoteReceived === null && (
               <>
                 <ModalCircularProgress size={"8rem"} thickness={2.5} />
-                <QuoteGeneratorTitle>
-                  Creating your quote...
-                </QuoteGeneratorTitle>
+                <QuoteGeneratorTitle>Creating your quote..</QuoteGeneratorTitle>
                 <QuoteGeneratorSubTitle style={{ marginTop: "20px" }}>
                   {wiseDevQuote}
                   <br></br>
