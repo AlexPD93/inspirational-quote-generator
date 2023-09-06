@@ -6,8 +6,6 @@ import styles from "@/styles/Home.module.css";
 // Components
 import {
   GradientBackgroundCon,
-  BackgroundImage1,
-  BackgroundImage2,
   FootCon,
   FooterLink,
   QuoteGeneratorCon,
@@ -19,8 +17,6 @@ import {
 } from "../../components/QuoteGenerator/QuoteGeneratorElements";
 import QuoteGeneratorModal from "../../components/QuoteGenerator/index";
 // Assets
-import Cloud1 from "../../assets/cloud-and-thunder.png";
-import Cloud2 from "../../assets/cloudy-weather.png";
 import { API } from "aws-amplify";
 import { generateAQuote, quotesQueryName } from "@/graphql/queries";
 import { GraphQLResult } from "@aws-amplify/api-graphql";
@@ -181,18 +177,6 @@ export default function Home() {
             </GenerateQuoteButton>
           </QuoteGeneratorInnerCon>
         </QuoteGeneratorCon>
-
-        <BackgroundImage1
-          src={Cloud1}
-          height="300"
-          alt="cloudybackground1"
-        ></BackgroundImage1>
-
-        <BackgroundImage2
-          src={Cloud2}
-          height="300"
-          alt="cloudybackground1"
-        ></BackgroundImage2>
 
         <FootCon>
           <>
